@@ -9,6 +9,9 @@ import { FilterResponse } from '../../enums/FilterResponse';
 import { AvatarPropertiesReplyMessage } from '../messages/AvatarPropertiesReply';
 import { AvatarPropertiesRequestMessage } from '../messages/AvatarPropertiesRequest';
 import { AvatarPropertiesReplyEvent } from '../../events/AvatarPropertiesReplyEvent';
+import { DataHomeLocationReplyMessage } from '../messages/DataHomeLocationReply';
+import { DataHomeLocationRequestMessage } from '../messages/DataHomeLocationRequest';
+import { DataHomeLocationReplyEvent } from '../../events/DataHomeLocationReplyEvent';
 import { Subscription } from 'rxjs';
 import { Avatar } from '../public/Avatar';
 
@@ -185,6 +188,34 @@ export class AgentCommands extends CommandsBase
             ProfileURL = Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.ProfileURL);
             CharterMember = parseInt(Utils.BufferToStringSimple(avatarPropertiesReply.PropertiesData.CharterMember), 10); // avatarPropertiesReply.PropertiesData.CharterMember;
             Flags = avatarPropertiesReply.PropertiesData.Flags;
+        };
+    }
+
+    async getHomeLocation(): Promise<DataHomeLocationReplyEvent>
+    {
+        const msg: DataHomeLocationRequestMessage = new DataHomeLocationRequestMessage();
+
+        console.log("getHomeLocation", this.agent.agentID);
+
+        msg.Info = {
+            AgentID: this.agent.agentID,
+            KickedFromEstateID: 0
+        };
+
+        msg.AgentInfo = {
+            AgentEffectiveMaturity: 0
+        }
+
+        this.circuit.sendMessage(msg, PacketFlags.Reliable);
+
+        const DataHomeLocationReply: DataHomeLocationReplyMessage = (await this.circuit.waitForMessage(Message.DataHomeLocationReply, 10000)) as DataHomeLocationReplyMessage;
+
+        return new class implements DataHomeLocationReplyEvent
+        {
+            AgentID = DataHomeLocationReply.Info.AgentID;
+            RegionHandle = DataHomeLocationReply.Info.RegionHandle;
+            Position = DataHomeLocationReply.Info.Position;
+            LookAt = DataHomeLocationReply.Info.LookAt;
         };
     }
 }

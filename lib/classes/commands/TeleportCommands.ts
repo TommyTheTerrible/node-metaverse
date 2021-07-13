@@ -4,6 +4,7 @@ import { TeleportEventType } from '../../enums/TeleportEventType';
 import { TeleportLureRequestMessage } from '../messages/TeleportLureRequest';
 import { Vector3 } from '../Vector3';
 import { TeleportLocationRequestMessage } from '../messages/TeleportLocationRequest';
+import { TeleportLandmarkRequestMessage } from '../messages/TeleportLandmarkRequest';
 import * as Long from 'long';
 import { Agent } from '../Agent';
 import { Subscription } from 'rxjs/internal/Subscription';
@@ -14,6 +15,7 @@ import { PacketFlags } from '../../enums/PacketFlags';
 import { RegionInfoReplyEvent } from '../../events/RegionInfoReplyEvent';
 import { Bot } from '../../Bot';
 import { Utils } from '../Utils';
+import { UUID } from '../UUID';
 
 export class TeleportCommands extends CommandsBase
 {
@@ -140,6 +142,29 @@ export class TeleportCommands extends CommandsBase
                 SessionID: circuit.sessionID,
                 LureID: lure.lureID,
                 TeleportFlags: TeleportFlags.ViaLure
+            };
+            circuit.sendMessage(tlr, PacketFlags.Reliable);
+            this.awaitTeleportEvent(true).then((event: TeleportEvent) =>
+            {
+                resolve(event);
+            }).catch((err) =>
+            {
+                reject(err);
+            });
+        });
+    }
+
+    teleportHome(): Promise<TeleportEvent>
+    {
+        return new Promise<TeleportEvent>((resolve, reject) =>
+        {
+            const circuit = this.currentRegion.circuit;
+            const tlr = new TeleportLandmarkRequestMessage();
+            const nullUUID = new UUID();
+            tlr.Info = {
+                AgentID: this.agent.agentID,
+                SessionID: circuit.sessionID,
+                LandmarkID: nullUUID
             };
             circuit.sendMessage(tlr, PacketFlags.Reliable);
             this.awaitTeleportEvent(true).then((event: TeleportEvent) =>

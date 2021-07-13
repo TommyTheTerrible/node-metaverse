@@ -1,5 +1,5 @@
 {
-  "name": "@caspertech/node-metaverse",
+  "name": "@tommytheterrible/node-metaverse",
   "version": "0.5.25",
   "description": "A node.js interface for Second Life.",
   "main": "dist/lib/index.js",

@@ -73,6 +73,8 @@ export class LoginResponse
             'lookAt'?: Vector3
         } = {};
 
+        console.log("parseHome", str);
+
         const json = str.replace(/[\[\]']/g, '\"');
         const parsed = JSON.parse(json);
 
